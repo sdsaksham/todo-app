@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Todo, todoDocument } from './schemas/todo.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class TodoService {
-  create(createTodoDto: CreateTodoDto) {
-    return 'This action adds a new todo';
+  constructor(@InjectModel(Todo.name) private todoModel: Model<todoDocument>) {}
+
+  create(todoData: CreateTodoDto) {
+    const createdTask = new this.todoModel(todoData);
+    return createdTask.save();
   }
 
   findAll() {
-    return `This action returns all todo`;
+    return this.todoModel.find().exec(); //mongoose methods return thenable that are not real JS promise so exec() is used to convert it into real JS promise
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} todo`;
+  findOne(id: string) {
+    return this.todoModel.findById(id).exec();
   }
 
-  update(id: number, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
+  update(id: string, updateTodoData: UpdateTodoDto) {
+    return this.todoModel
+      .findByIdAndUpdate(id, updateTodoData, { new: true })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} todo`;
+  remove(id: string) {
+    return this.todoModel.findByIdAndDelete(id).exec();
   }
 }
