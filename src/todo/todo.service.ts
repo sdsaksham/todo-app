@@ -9,13 +9,13 @@ import { Model } from 'mongoose';
 export class TodoService {
   constructor(@InjectModel(Todo.name) private todoModel: Model<todoDocument>) {}
 
-  create(todoData: CreateTodoDto) {
-    const createdTask = new this.todoModel(todoData);
+  create(todoData: CreateTodoDto, userId: string) {
+    const createdTask = new this.todoModel({ ...todoData, user: userId });
     return createdTask.save();
   }
 
-  findAll() {
-    return this.todoModel.find().exec(); //mongoose methods return thenable that are not real JS promise so exec() is used to convert it into real JS promise
+  async findAll(userId: string) {
+    return this.todoModel.find({ user: userId }).exec(); //mongoose methods return query objects that are used for further chaining, so exec() is used to execute the query objects and get real JS promise
   }
 
   findOne(id: string) {
